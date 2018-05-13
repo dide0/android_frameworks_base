@@ -407,7 +407,7 @@ bool AssetManager::addCommonOverlayPath(const String8& themePackagePath, int32_t
                For example, if we have theme "com.redtheme.apk"
  *  assets/
  *    icons/
- *        res/
+ *        res/11
  *          drawable/
  *              foo.png
  * Our restable will reference foo.png's path as "res/drawable/foo.png"
@@ -458,30 +458,30 @@ String8 AssetManager::getPkgName(const char *apkPath) {
         ap.type = kFileTypeRegular;
         ap.path = String8(apkPath);
 
-        ResXMLTree tree;
-
         Asset* manifestAsset = openNonAssetInPathLocked(kAndroidManifest, Asset::ACCESS_BUFFER, ap);
-        tree.setTo(manifestAsset->getBuffer(true),
-                       manifestAsset->getLength());
-        tree.restart();
+	{
+		ResXMLTree tree;
+		tree.setTo(manifestAsset->getBuffer(true),
+		               manifestAsset->getLength());
+		tree.restart();
 
-        int depth = 0;
-        size_t len;
-        ResXMLTree::event_code_t code;
-        while ((code=tree.next()) != ResXMLTree::END_DOCUMENT && code != ResXMLTree::BAD_DOCUMENT) {
-            if (code != ResXMLTree::START_TAG) {
-                    continue;
-            }
-            String8 tag(tree.getElementName(&len));
-            if (tag != "manifest") break; //Manifest does not start with <manifest>
-            Res_value value;
-            size_t len;
-            ssize_t idx = tree.indexOfAttribute(NULL, "package");
-            const uint16_t* str = tree.getAttributeStringValue(idx, &len);
-            pkgName = (str ? String8(str, len) : String8());
+		int depth = 0;
+		size_t len;
+		ResXMLTree::event_code_t code;
+		while ((code=tree.next()) != ResXMLTree::END_DOCUMENT && code != ResXMLTree::BAD_DOCUMENT) {
+		    if (code != ResXMLTree::START_TAG) {
+		            continue;
+		    }
+		    String8 tag(tree.getElementName(&len));
+		    if (tag != "manifest") break; //Manifest does not start with <manifest>
+		    Res_value value;
+		    size_t len;
+		    ssize_t idx = tree.indexOfAttribute(NULL, "package");
+		    const uint16_t* str = tree.getAttributeStringValue(idx, &len);
+		    pkgName = (str ? String8(str, len) : String8());
 
-        }
-
+        	}
+	}
         manifestAsset->close();
         return pkgName;
     }
